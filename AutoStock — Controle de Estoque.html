@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AutoStock — Controle de Estoque</title>
+<style>
+:root{--bg:#f4f7fb;--sf:#fff;--sf2:#f1f5f9;--tx:#172033;--mu:#6b7a8f;--bd:#e3e9f0;--pr:#1677ff;--ps:#eaf3ff;--ok:#12a663;--oks:#e6f8ef;--wa:#d99100;--was:#fff5db;--er:#e5434d;--ers:#ffedee;--sh:0 8px 28px rgba(23,32,51,.07);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1520;--sf:#14202d;--sf2:#1a2938;--tx:#edf4fb;--mu:#9eacbb;--bd:#273746;--pr:#4b9aff;--ps:#162e4c;--ok:#37ce88;--oks:#103727;--wa:#ffc13b;--was:#3b2d0c;--er:#ff6d75;--ers:#401b1f;--sh:0 10px 30px rgba(0,0,0,.25)}}
+:root[data-theme="dark"]{--bg:#0d1520;--sf:#14202d;--sf2:#1a2938;--tx:#edf4fb;--mu:#9eacbb;--bd:#273746;--pr:#4b9aff;--ps:#162e4c;--ok:#37ce88;--oks:#103727;--wa:#ffc13b;--was:#3b2d0c;--er:#ff6d75;--ers:#401b1f;--sh:0 10px 30px rgba(0,0,0,.25)}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 20px}
+.brand{font-weight:800;font-size:18px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+.brand i{font-style:normal;background:var(--pr);border-radius:10px;padding:3px 7px}
+.tabs{display:flex;gap:4px;overflow-x:auto;order:3;width:100%}
+.tabs button{border:0;background:none;color:var(--mu);padding:8px 14px;border-radius:10px;font-weight:600;white-space:nowrap}
+.tabs button.on{background:var(--ps);color:var(--pr)}
+.sp{flex:1}
+input,select{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:9px 12px;outline:none;min-width:0}
+input:focus,select:focus{border-color:var(--pr)}
+.btn{border:1px solid var(--bd);background:var(--sf);border-radius:10px;padding:9px 14px;font-weight:700;font-size:13px}
+.btn:hover{border-color:var(--pr);color:var(--pr)}
+.btn.p{background:var(--pr);border-color:var(--pr);color:#fff}.btn.p:hover{color:#fff;filter:brightness(1.1)}
+.btn.s{padding:4px 9px;font-size:12px}
+.wrap{max-width:1200px;margin:auto;padding:22px 20px 60px}
+h1{font-size:24px;margin:0 0 4px;letter-spacing:-.5px}.sub{color:var(--mu);margin:0 0 20px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:16px}
+.two{display:grid;gap:14px;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);margin-bottom:16px}
+@media(max-width:820px){.two{grid-template-columns:1fr}}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;box-shadow:var(--sh)}
+.ch{padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ch h2{margin:0;font-size:15px}.cb{padding:16px 18px}
+.kpi{padding:16px 18px;text-align:left;width:100%;font:inherit}
+.kpi b{display:block;font-size:26px;letter-spacing:-1px;margin:4px 0}.kpi span{color:var(--mu);font-size:12px}
+button.kpi{cursor:pointer;transition:.15s}button.kpi:hover{transform:translateY(-2px);border-color:var(--pr)}
+.chart{display:flex;align-items:flex-end;gap:14px;height:210px;border-bottom:1px solid var(--bd)}
+.grp{flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:4px}
+.bar{width:100%;max-width:26px;border-radius:6px 6px 0 0;min-height:3px;position:relative;transition:height .4s}
+.bar:hover::after{content:attr(data-t);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--tx);color:var(--sf);font-size:11px;padding:3px 7px;border-radius:6px;white-space:nowrap;z-index:2}
+.a{background:linear-gradient(180deg,#5aa8ff,var(--pr))}.m{background:var(--bd)}
+.lbl{display:flex;gap:14px;padding-top:6px}.lbl div{flex:1;text-align:center;font-size:11px;color:var(--mu);overflow:hidden;text-overflow:ellipsis}
+.lg{font-size:11px;color:var(--mu);display:flex;gap:12px}.lg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd)}.row:last-child{border:0}
+.row .i{flex:1;min-width:0}.row strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row small{color:var(--mu)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:820px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--mu);text-align:left;padding:10px 14px;background:var(--sf2);white-space:nowrap}
+th[data-a]{cursor:pointer}th[data-a]:hover{color:var(--pr)}
+td{padding:11px 14px;border-top:1px solid var(--bd)}tbody tr:hover{background:var(--sf2)}
+.tag{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.ok{background:var(--oks);color:var(--ok)}.low{background:var(--was);color:var(--wa)}.out{background:var(--ers);color:var(--er)}
+.qty{display:inline-flex;align-items:center;gap:6px}.qty button{width:24px;height:24px;border-radius:7px;border:1px solid var(--bd);background:var(--sf2);line-height:1}
+.qty button:hover{border-color:var(--pr);color:var(--pr)}
+.tb{display:flex;gap:8px;padding:12px 18px;flex-wrap:wrap;border-bottom:1px solid var(--bd)}.tb input{flex:1;min-width:180px}
+.empty{padding:28px;text-align:center;color:var(--mu)}
+dialog{border:1px solid var(--bd);border-radius:16px;background:var(--sf);color:var(--tx);padding:0;width:min(460px,92vw)}
+dialog::backdrop{background:rgba(6,16,28,.55)}
+dialog form{padding:20px;display:grid;gap:12px;grid-template-columns:1fr 1fr}
+dialog h3{margin:0;grid-column:1/-1}dialog label{font-size:12px;font-weight:700;color:var(--mu);display:grid;gap:5px}
+dialog .f{grid-column:1/-1}dialog .ft{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;pointer-events:none;background:var(--tx);color:var(--sf);padding:10px 16px;border-radius:12px;font-weight:600;z-index:20;transition:.25s;display:flex;gap:12px;align-items:center}
+#toast.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}#toast button{background:none;border:0;color:var(--pr);font-weight:800}
+.ro [data-a="new"],.ro [data-a="mv"],.ro [data-a="q"],.ro [data-a="edit"],.ro [data-a="del"],.ro [data-a="imp"],.ro [data-a="reset"]{display:none}#sync{font-size:12px;color:var(--mu)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><i>📦</i>AutoStock</div>
+  <input id="q" placeholder="Buscar produto, código ou categoria… (/)" style="flex:1;max-width:420px">
+  <div class="sp"></div>
+  <span id="sync">○ Somente local</span>
+  <button class="btn" id="theme" title="Alternar tema">🌓</button>
+  <button class="btn" data-a="mv">⇅ Movimentar</button>
+  <button class="btn p" data-a="new">+ Novo produto</button>
+  <nav class="tabs">
+    <button data-a="v" data-v="d" class="on">Dashboard</button>
+    <button data-a="v" data-v="p">Produtos</button>
+    <button data-a="v" data-v="m">Movimentações</button>
+    <button data-a="v" data-v="r">Relatórios</button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section id="v-d">
+    <h1>Visão geral do estoque</h1><p class="sub">Clique nos indicadores para filtrar os produtos.</p>
+    <div class="grid" id="kpis"></div>
+    <div class="two">
+      <div class="card"><div class="ch"><h2>Estoque por categoria</h2><div class="lg"><span><i style="background:var(--pr)"></i>Atual</span><span><i style="background:var(--bd)"></i>Mínimo</span></div></div><div class="cb"><div class="chart" id="chart"></div><div class="lbl" id="lbl"></div></div></div>
+      <div class="card"><div class="ch"><h2>Precisam de reposição</h2><span class="tag low" id="acount"></span></div><div class="cb" id="alerts"></div></div>
+    </div>
+    <div class="card"><div class="ch"><h2>Últimas movimentações</h2><button class="btn s" data-a="v" data-v="m">Ver todas</button></div><div class="cb" id="recent"></div></div>
+  </section>
+
+  <section id="v-p" hidden>
+    <h1>Produtos</h1><p class="sub">Ajuste o estoque com + / −, edite ou exclua (dá para desfazer).</p>
+    <div class="card">
+      <div class="tb">
+        <select id="fc"></select>
+        <select id="fs"><option value="">Todos os status</option><option value="ok">OK</option><option value="low">Estoque baixo</option><option value="out">Sem estoque</option></select>
+        <button class="btn" data-a="clr">Limpar filtros</button>
+      </div>
+      <div class="tw"><table><thead><tr>
+        <th data-a="sort" data-k="code">Código</th><th data-a="sort" data-k="name">Produto</th><th data-a="sort" data-k="cat">Categoria</th>
+        <th data-a="sort" data-k="stock">Estoque</th><th data-a="sort" data-k="min">Mín.</th><th data-a="sort" data-k="cost">Custo</th><th>Status</th><th></th>
+      </tr></thead><tbody id="tb"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="v-m" hidden>
+    <h1>Movimentações</h1><p class="sub">Histórico de entradas e saídas (últimas 200).</p>
+    <div class="card"><div class="tw"><table><thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Qtd.</th><th>Observação</th><th>Usuário</th></tr></thead><tbody id="mt"></tbody></table></div></div>
+  </section>
+
+  <section id="v-r" hidden>
+    <h1>Relatórios</h1><p class="sub">Resumo por categoria e ferramentas de dados.</p>
+    <div class="card" style="margin-bottom:14px"><div class="ch"><h2>Resumo por categoria</h2><div style="display:flex;gap:8px"><button class="btn s" data-a="csv">Baixar CSV</button><button class="btn s" data-a="imp">Importar CSV</button><input type="file" id="imp" accept=".csv,text/csv" hidden><button class="btn s" data-a="reset">Restaurar dados de exemplo</button></div></div>
+    <div class="tw"><table><thead><tr><th>Categoria</th><th>Produtos</th><th>Unidades</th><th>Valor em estoque</th><th>Em alerta</th></tr></thead><tbody id="rt"></tbody></table></div></div>
+  </section>
+</main>
+
+<dialog id="dp"><form id="fp" method="dialog">
+  <h3 id="dpt">Novo produto</h3>
+  <label>Código<input id="pc" required placeholder="F013"></label>
+  <label>Produto<input id="pn" required></label>
+  <label>Categoria<input id="pk" required list="cats" placeholder="Filtros"></label>
+  <label>Unidade<select id="pu"><option>un.</option><option>caixa</option><option>litro</option><option>kit</option></select></label>
+  <label>Estoque atual<input id="ps" type="number" min="0" required></label>
+  <label>Estoque mínimo<input id="pm" type="number" min="0" required></label>
+  <label class="f">Custo unitário (R$)<input id="pv" type="number" min="0" step="0.01" required></label>
+  <div class="ft"><button type="button" class="btn" data-a="close">Cancelar</button><button class="btn p">Salvar</button></div>
+</form></dialog>
+<datalist id="cats"></datalist>
+
+<dialog id="dm"><form id="fm" method="dialog">
+  <h3>Registrar movimentação</h3>
+  <label class="f">Produto<select id="mp"></select></label>
+  <label>Tipo<select id="mt2"><option value="in">Entrada</option><option value="out">Saída</option></select></label>
+  <label>Quantidade<input id="mq" type="number" min="1" value="1" required></label>
+  <label class="f">Observação<input id="mo" placeholder="Ex.: compra fornecedor, venda balcão"></label>
+  <div class="ft"><button type="button" class="btn" data-a="close">Cancelar</button><button class="btn p">Registrar</button></div>
+</form></dialog>
+<div id="toast"><span id="tt"></span><button id="tu" hidden>Desfazer</button></div>
+
+<script>
+const $=s=>document.querySelector(s),K='autostock-v2',BRL=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const esc=v=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const seed=()=>[["F001","Filtro de Óleo","Filtros",8,5,32.9,"un."],["P002","Pastilha de Freio","Freios",2,5,89,"kit"],["V003","Vela de Ignição","Ignição",0,5,24.5,"un."],["C004","Correia Dentada","Motor",6,5,118,"un."],["L005","Lâmpada H7","Iluminação",3,5,29.9,"un."],["M006","Filtro de Ar","Filtros",7,4,41,"un."],["M007","Óleo 5W30","Lubrificantes",15,8,38.9,"litro"],["F008","Disco de Freio","Freios",9,5,145,"un."],["M009","Bateria 60Ah","Elétrica",4,3,489,"un."],["M010","Amortecedor Dianteiro","Suspensão",10,6,262,"un."],["I011","Lâmpada LED","Iluminação",2,4,79.9,"un."],["F012","Filtro de Combustível","Filtros",5,5,36.5,"un."]].map(([code,name,cat,stock,min,cost,unit])=>({code,name,cat,stock,min,cost,unit}));
+let S=null;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
+if(!S||!S.p)S={p:seed(),m:[]};
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const F={q:'',cat:'',s:'',k:'code',d:1};let view='d',editing=null,tm;
+const st=p=>p.stock<=0?'out':p.stock<p.min?'low':'ok',LB={ok:'OK',low:'Estoque baixo',out:'Sem estoque'};
+const find=c=>S.p.find(p=>p.code===c);
+
+function toast(msg,undo){clearTimeout(tm);$('#tt').textContent=msg;const u=$('#tu');u.hidden=!undo;u.onclick=()=>{undo();$('#toast').classList.remove('show')};$('#toast').classList.add('show');tm=setTimeout(()=>$('#toast').classList.remove('show'),undo?6000:2500)}
+function log(p,y,q,o){p.stock+=y==='in'?q:-q;S.m.unshift({t:Date.now(),c:p.code,n:p.name,y,q,o:o||'',u:myId});S.m=S.m.slice(0,200);putP(p);addM(S.m[0])}
+function go(v){view=v;['d','p','m','r'].forEach(x=>$('#v-'+x).hidden=x!==v);document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));render()}
+
+function filtered(){const q=F.q.toLowerCase().trim();return S.p.filter(p=>(!q||(p.code+' '+p.name+' '+p.cat).toLowerCase().includes(q))&&(!F.cat||p.cat===F.cat)&&(!F.s||st(p)===F.s)).sort((a,b)=>{const x=a[F.k],y=b[F.k];return(typeof x==='string'?x.localeCompare(y,'pt-BR'):x-y)*F.d})}
+
+function render(){
+  const cats=[...new Set(S.p.map(p=>p.cat))].sort();
+  $('#fc').innerHTML='<option value="">Todas as categorias</option>'+cats.map(c=>`<option ${c===F.cat?'selected':''}>${esc(c)}</option>`).join('');
+  $('#cats').innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join('');
+  $('#fs').value=F.s;
+  $('#mp').innerHTML=S.p.map(p=>`<option value="${esc(p.code)}">${esc(p.code)} — ${esc(p.name)} (${p.stock})</option>`).join('');
+  const n={ok:0,low:0,out:0};S.p.forEach(p=>n[st(p)]++);
+  const val=S.p.reduce((s,p)=>s+p.stock*p.cost,0);
+  $('#kpis').innerHTML=`<button class="card kpi" data-a="flt" data-s=""><span>📦 Produtos cadastrados</span><b>${S.p.length}</b><span>${n.ok} com estoque OK</span></button>
+  <div class="card kpi"><span>💰 Valor em estoque</span><b>${BRL(val)}</b><span>Custo × quantidade</span></div>
+  <button class="card kpi" data-a="flt" data-s="low"><span>⚠️ Abaixo do mínimo</span><b style="color:var(--wa)">${n.low}</b><span>Clique para filtrar</span></button>
+  <button class="card kpi" data-a="flt" data-s="out"><span>⛔ Sem estoque</span><b style="color:var(--er)">${n.out}</b><span>Clique para filtrar</span></button>`;
+  const agg={};S.p.forEach(p=>{const a=agg[p.cat]||(agg[p.cat]={s:0,m:0,v:0,n:0,l:0});a.s+=p.stock;a.m+=p.min;a.v+=p.stock*p.cost;a.n++;if(st(p)!=='ok')a.l++});
+  const es=Object.entries(agg),mx=Math.max(1,...es.flatMap(([,a])=>[a.s,a.m]));
+  $('#chart').innerHTML=es.map(([c,a])=>`<div class="grp"><div class="bar a" style="height:${a.s/mx*100}%" data-t="${esc(c)}: ${a.s} atual"></div><div class="bar m" style="height:${a.m/mx*100}%" data-t="${a.m} mínimo"></div></div>`).join('');
+  $('#lbl').innerHTML=es.map(([c])=>`<div title="${esc(c)}">${esc(c)}</div>`).join('');
+  const al=S.p.filter(p=>st(p)!=='ok').sort((a,b)=>a.stock-b.stock);
+  $('#acount').textContent=al.length+' alertas';
+  $('#alerts').innerHTML=al.length?al.slice(0,6).map(p=>`<div class="row"><div class="i"><strong>${esc(p.name)}</strong><small>${p.stock} ${esc(p.unit)} · mínimo ${p.min}</small></div><span class="tag ${st(p)}">${LB[st(p)]}</span><button class="btn s" data-a="mv" data-c="${esc(p.code)}" data-t="in">Repor</button></div>`).join(''):'<div class="empty">Tudo certo por aqui 🎉</div>';
+  const mrow=m=>`<span class="tag ${m.y==='in'?'ok':'out'}">${m.y==='in'?'Entrada':'Saída'}</span>`;
+  $('#recent').innerHTML=S.m.length?S.m.slice(0,5).map(m=>`<div class="row"><div class="i"><strong>${esc(m.n)}</strong><small>${new Date(m.t).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}${m.o?' · '+esc(m.o):''}</small></div>${mrow(m)}<b>${m.q}</b></div>`).join(''):'<div class="empty">Nenhuma movimentação ainda. Use + / − ou “Movimentar”.</div>';
+  const r=filtered();
+  $('#tb').innerHTML=r.length?r.map(p=>{const s=st(p),c=esc(p.code);return`<tr><td><b>${c}</b></td><td><b>${esc(p.name)}</b><br><small style="color:var(--mu)">${esc(p.unit)}</small></td><td>${esc(p.cat)}</td>
+  <td><span class="qty"><button data-a="q" data-c="${c}" data-d="-1" aria-label="Diminuir">−</button><b>${p.stock}</b><button data-a="q" data-c="${c}" data-d="1" aria-label="Aumentar">+</button></span></td>
+  <td>${p.min}</td><td>${BRL(p.cost)}</td><td><span class="tag ${s}">${LB[s]}</span></td>
+  <td style="white-space:nowrap"><button class="btn s" data-a="edit" data-c="${c}">Editar</button> <button class="btn s" data-a="del" data-c="${c}">Excluir</button></td></tr>`}).join(''):'<tr><td colspan="8" class="empty">Nenhum produto encontrado.</td></tr>';
+  $('#mt').innerHTML=S.m.length?S.m.map(m=>`<tr><td>${new Date(m.t).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}</td><td>${esc(m.n)} <small style="color:var(--mu)">${esc(m.c)}</small></td><td>${mrow(m)}</td><td><b>${m.q}</b></td><td>${esc(m.o)||'—'}</td><td data-u="${esc(m.u||'')}">—</td></tr>`).join(''):'<tr><td colspan="6" class="empty">Sem movimentações registradas.</td></tr>';
+  $('#rt').innerHTML=es.map(([c,a])=>`<tr><td><b>${esc(c)}</b></td><td>${a.n}</td><td>${a.s}</td><td>${BRL(a.v)}</td><td>${a.l?`<span class="tag low">${a.l}</span>`:'—'}</td></tr>`).join('');fillUsers()
+}
+
+function openP(c){const p=c?find(c):null;editing=p?p.code:null;$('#dpt').textContent=p?'Editar produto':'Novo produto';
+  $('#pc').value=p?p.code:'';$('#pc').disabled=!!p;$('#pn').value=p?p.name:'';$('#pk').value=p?p.cat:'';$('#pu').value=p?p.unit:'un.';
+  $('#ps').value=p?p.stock:'';$('#pm').value=p?p.min:'';$('#pv').value=p?p.cost:'';$('#dp').showModal()}
+function openM(c,t){if(c)$('#mp').value=c;$('#mt2').value=t||'in';$('#mq').value=1;$('#mo').value='';$('#dm').showModal()}
+
+$('#fp').addEventListener('submit',()=>{
+  const d={code:$('#pc').value.trim().toUpperCase().replace(/[\/\s]+/g,'-'),name:$('#pn').value.trim(),cat:$('#pk').value.trim(),unit:$('#pu').value,stock:+$('#ps').value,min:+$('#pm').value,cost:+$('#pv').value};
+  if(editing){Object.assign(find(editing),d,{code:editing});toast('Produto atualizado.')}
+  else if(find(d.code)){toast('Já existe um produto com esse código.');return}
+  else{S.p.push(d);toast('Produto cadastrado.')}
+  putP(find(d.code));save();render()});
+$('#fm').addEventListener('submit',()=>{
+  const p=find($('#mp').value),y=$('#mt2').value,q=+$('#mq').value;
+  if(!p||q<1)return;if(y==='out'&&q>p.stock){toast(`Saída maior que o estoque (${p.stock}).`);return}
+  log(p,y,q,$('#mo').value.trim());save();render();toast(`${y==='in'?'Entrada':'Saída'} de ${q} registrada.`)});
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,c=b.dataset.c;
+  if(a==='v')go(b.dataset.v);
+  else if(a==='new')openP();
+  else if(a==='mv')openM(c,b.dataset.t);
+  else if(a==='edit')openP(c);
+  else if(a==='close')b.closest('dialog').close();
+  else if(a==='q'){const p=find(c),d=+b.dataset.d;if(d<0&&p.stock<=0)return;log(p,d>0?'in':'out',1,'Ajuste rápido');save();render()}
+  else if(a==='del'){const i=S.p.findIndex(p=>p.code===c),p=S.p[i];S.p.splice(i,1);delP(c);save();render();toast(`“${p.name}” excluído.`,()=>{S.p.splice(i,0,p);putP(p);save();render()})}
+  else if(a==='sort'){F.d=F.k===b.dataset.k?-F.d:1;F.k=b.dataset.k;render()}
+  else if(a==='flt'){F.s=b.dataset.s;F.cat='';F.q='';$('#q').value='';go('p')}
+  else if(a==='clr'){F.q=F.cat=F.s='';$('#q').value='';render()}
+  else if(a==='csv')exportCSV();else if(a==='imp')$('#imp').click();
+  else if(a==='reset'&&confirm('Restaurar os dados de exemplo? Suas alterações serão perdidas.')){const old=S.p.slice();S={p:seed(),m:[]};resetCloud(old);save();render();toast('Dados restaurados.')}
+});
+$('#q').addEventListener('input',e=>{F.q=e.target.value;if(view!=='p')go('p');else render()});
+$('#fc').onchange=e=>{F.cat=e.target.value;render()};$('#fs').onchange=e=>{F.s=e.target.value;render()};
+$('#theme').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('autostock-theme',r.dataset.theme)}catch(x){}};
+try{const t=localStorage.getItem('autostock-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea')||document.querySelector('dialog[open]'))return;if(e.key==='/'){e.preventDefault();$('#q').focus()}if(e.key==='n')openP()});
+
+let db=null,user=null,myId='';
+const errW=()=>toast('Sem permissão para salvar na nuvem.');
+const putP=p=>db?db.doc('products/'+p.code).set(p).catch(errW):0;
+const delP=c=>db?db.doc('products/'+c).delete().catch(errW):0;
+const addM=m=>db?db.collection('moves').add(m).catch(errW):0;
+function resetCloud(old){if(!db)return;old.filter(o=>!S.p.some(p=>p.code===o.code)).forEach(o=>delP(o.code));S.p.forEach(putP);db.collection('moves').get().then(x=>x.docs.forEach(d=>db.doc('moves/'+d.id).delete())).catch(errW)}
+async function cloud(){
+  if(!window.claude)return;
+  try{user=await claude.use('user');if(user){myId=await user.id();document.body.classList.toggle('ro',user.can('data.write')===false)}}catch(e){}
+  try{db=await claude.use('db')}catch(e){}
+  if(!db)return;
+  let ok=false;
+  try{const m=db.doc('meta/init');if((await m.get()).exists)ok=true;else{await Promise.all(S.p.map(p=>db.doc('products/'+p.code).set(p)));await m.set({t:Date.now()});ok=true}}catch(e){}
+  if(!ok){db=null;return}
+  db.collection('products').onSnapshot(x=>{S.p=x.docs.map(d=>d.data());save();render()});
+  db.collection('moves').orderBy('t','desc').limit(200).onSnapshot(x=>{S.m=x.docs.map(d=>d.data());save();render()});
+  $('#sync').textContent='● Sincronizado';
+}
+async function fillUsers(){
+  if(!user)return;const els=[...document.querySelectorAll('#mt [data-u]')].filter(e=>e.dataset.u);const ids=[...new Set(els.map(e=>e.dataset.u))];if(!ids.length)return;
+  try{const ps=await user.profiles(ids);els.forEach(e=>{const p=ps[e.dataset.u];e.textContent=(p&&p.name)||'Usuário'})}catch(x){}
+}
+const csvText=()=>[['Código','Produto','Categoria','Estoque','Mínimo','Custo','Unidade','Status'],...S.p.map(p=>[p.code,p.name,p.cat,p.stock,p.min,p.cost,p.unit,LB[st(p)]])].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
+async function exportCSV(){
+  const csv='\ufeff'+csvText();
+  if(!window.claude){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='autostock-produtos.csv';a.click();return}
+  try{const dl=await claude.use('downloads');if(dl){await dl.save({filename:'autostock-produtos.csv',data:csv});toast('CSV pronto.');return}}catch(e){if(e&&e.code==='declined')return}
+  const t=document.createElement('textarea');t.value=csv;document.body.appendChild(t);t.select();let ok=false;try{ok=document.execCommand('copy')}catch(x){}t.remove();toast(ok?'CSV copiado — cole no Excel.':'Não foi possível exportar.')
+}
+function parseCSV(t){const sep=t.split('\n')[0].includes(';')?';':',';return t.replace(/^\ufeff/,'').split(/\r?\n/).filter(l=>l.trim()).map(l=>{const r=[];let c='',q=false;for(let i=0;i<l.length;i++){const h=l[i];if(q){if(h==='"'&&l[i+1]==='"'){c+='"';i++}else if(h==='"')q=false;else c+=h}else if(h==='"')q=true;else if(h===sep){r.push(c);c=''}else c+=h}r.push(c);return r})}
+$('#imp').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;let n=0;
+  parseCSV(await f.text()).forEach(r=>{
+    if(r.length<5||isNaN(+r[3]))return;
+    const code=r[0].trim().toUpperCase().replace(/[\/\s]+/g,'-'),d={code,name:r[1].trim(),cat:r[2].trim(),stock:Math.max(0,+r[3]),min:Math.max(0,+r[4]||0),cost:Math.max(0,+String(r[5]||0).replace(',','.')||0),unit:(r[6]||'un.').trim()};
+    if(!code||!d.name)return;const p=find(code);if(p)Object.assign(p,d);else S.p.push(d);putP(find(code));n++});
+  e.target.value='';save();render();toast(n?`${n} produtos importados/atualizados.`:'Nenhuma linha válida. Formato: Código;Produto;Categoria;Estoque;Mínimo;Custo.');
+};
+render();cloud();
+</script>
+</body>
+</html>
